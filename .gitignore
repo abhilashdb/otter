@@ -1,0 +1,33 @@
+# Python
+backend/.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+*.local
+google_token.json
+
+# Docker volume (if bind-mounted)
+pgdata/
+
+# Local backup archives (synced to Drive out-of-band)
+backups/
+
+# OS
+.DS_Store
+
+# Built macOS launcher (regenerate with scripts/make-app.sh)
+Otter.app/
+
+# Local tooling state (Claude Code / Isaac)
+.isaac/
+.claude/settings.local.json

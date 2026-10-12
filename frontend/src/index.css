@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Print: PT estimator report ──────────────────────────────────────────────
+   The report renders into a portal (#pt-print-root) as a full-screen overlay on
+   screen. When printing we hide the app shell (#root) and print only the report
+   sheet as normal flow, dropping the overlay backdrop and toolbar. */
+@media print {
+  #root {
+    display: none !important;
+  }
+  #pt-print-root {
+    display: block !important;
+  }
+  .pt-report-overlay {
+    position: static !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+  .pt-report-toolbar {
+    display: none !important;
+  }
+  .pt-report {
+    max-width: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ink antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Subtle, consistent focus ring in the accent color. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ── Ambient motion ──────────────────────────────────────────────────────────
+   Restrained, on-brand movement: a slow accent sliver that travels along a
+   hairline, and a gentle one-time "rise" as content settles into place. Both
+   are gated behind prefers-reduced-motion:no-preference, so the resting state
+   (fully visible, static) is always the default — nothing is parked waiting on
+   an animation. */
+@layer utilities {
+  @media (prefers-reduced-motion: no-preference) {
+    /* A faint teal line that drifts across the bottom hairline of its host.
+       Slow + low-contrast so it reads as ambient, not attention-grabbing. */
+    .otter-sweep {
+      position: relative;
+    }
+    .otter-sweep::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      height: 1px;
+      width: 32%;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.55;
+      animation: otter-sweep 11s linear infinite;
+    }
+    @keyframes otter-sweep {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(410%);
+      }
+    }
+
+    /* One-shot entrance — ends at the resting state (both filled), so it's safe
+       to key by route for a soft page-in on navigation. */
+    .otter-rise {
+      animation: otter-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes otter-rise {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ── Lakehouse builder diorama (Overview) ─────────────────────────────────
+       An otter assembles a brick lakehouse: bricks drop into place bottom-up
+       (staggered via --d), then roof/door/windows/sign fade in, while the otter
+       bobs, the flag waves, and the lake shimmers forever. All motion is inside
+       prefers-reduced-motion:no-preference; the base (static) state below shows
+       the finished lakehouse. */
+    .lh-brick,
+    .lh-late {
+      opacity: 0;
+    }
+    .lh-brick {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: lh-brick-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--d, 0ms);
+    }
+    @keyframes lh-brick-in {
+      from {
+        opacity: 0;
+        transform: translateY(-14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .lh-late {
+      animation: lh-fade-in 0.6s ease both;
+      animation-delay: var(--d, 0ms);
+    }
+    @keyframes lh-fade-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    .lh-otter {
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: lh-bob 2.6s ease-in-out infinite;
+    }
+    @keyframes lh-bob {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-2.5px);
+      }
+    }
+    .lh-wave {
+      animation: lh-wave 6s linear infinite;
+    }
+    @keyframes lh-wave {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-24px);
+      }
+    }
+    .lh-flag {
+      transform-box: fill-box;
+      transform-origin: left center;
+      animation: lh-flag 1.9s ease-in-out infinite;
+    }
+    @keyframes lh-flag {
+      0%,
+      100% {
+        transform: scaleX(1);
+      }
+      50% {
+        transform: scaleX(0.66);
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+# Local dev infra: source-of-truth Postgres (logical replication on) + Electric
+# sync service. The FastAPI backend and Vite frontend run on the host (see
+# scripts/dev.sh), not in compose, for fast reloads.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: otter-postgres
+    environment:
+      POSTGRES_DB: otter
+      POSTGRES_USER: otter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-otter}
+    # wal_level=logical is required for Electric to stream the WAL.
+    command: ["postgres", "-c", "wal_level=logical"]
+    ports:
+      - "54321:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U otter -d otter"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  electric:
+    image: electricsql/electric:latest
+    container_name: otter-electric
+    environment:
+      # Electric connects to Postgres over the compose network.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-otter}:${POSTGRES_PASSWORD:-otter}@postgres:5432/otter?sslmode=disable
+      # Local dev only: serve the shape API without an auth secret.
+      ELECTRIC_INSECURE: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
